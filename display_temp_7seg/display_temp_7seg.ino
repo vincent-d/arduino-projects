@@ -24,8 +24,9 @@ void interrupt();
 void setup() {
 
   Timer1.attachInterrupt(interrupt, interrupt_slot_time);
-// disp.setValue(0);
-  disp.setValue(65535);
+  //disp.setValue(0l);
+  //disp.setDots(1<<1);
+  disp.setValue(-200l);
 
 }
 
@@ -46,15 +47,14 @@ int readTemp() {
 void interrupt() {
   
   int temp;
-  int v;
  
   // All interrupts
   disp.printValueSync();
   
   switch (interrupt_slot) {
     case 0:
-      //temp = readTemp();
-      //disp.setValue(temp);
+      temp = readTemp();
+      //disp.setValue((long) temp);
       break;
     default:
       break;    

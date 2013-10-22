@@ -6,39 +6,36 @@
 #include "SevenSeg.h"
 #include <SPI.h>
 
-SevenSeg::SevenSeg(int dispSize) {
-  
- SPI.begin();
- SPI.setBitOrder(MSBFIRST);
- SPI.setDataMode(SPI_MODE0);
- m_size = dispSize;
+SevenSeg::SevenSeg() {
+
+  SPI.begin();
+  SPI.setBitOrder(MSBFIRST);
+  SPI.setDataMode(SPI_MODE0);
   
 }
 
-int SevenSeg::printValueSync(int isChar) {
+int SevenSeg::printValueSync() {
   
-  unsigned int value;
-  int i = 0;
+  int value;
   unsigned int val;
-  
-  if (isChar) {
-    value = m_value.tab[0];
-    while (value != 0 && i < m_size) {
-      
-      val = value & 0xFF;
-      if (i != 0 && dot_dec == i)
-        val &= ~0x80;
-    
-      spiSendAtIndex(val, i);      
-      
-      value = m_value.tab[++i];
+  int i = 0;
+
+  if (m_isChar) {
+    // Char / string
+    val = m_value.tab[0];
+    while (val != 0 && i < DISP_SIZE) {
+      spiSendAtIndex(val & 0xFF, i);
+      val = m_value.tab[++i];
     }
   } else {
+    // Numeric value
     value = m_value.binVal;
-    while (value > 0 && i < m_size) {
+    if (m_isNeg)
+      value = -value;
+    while (value > 0 && i < DISP_SIZE) {
       
       val = seven_seg[value % 10];
-      if (i != 0 && dot_dec == i)
+      if (m_dot & 1 << i)
         val &= ~0x80;
     
       spiSendAtIndex(val, i);      
@@ -46,6 +43,8 @@ int SevenSeg::printValueSync(int isChar) {
       value /= 10;
       i++;
     }
+    if (m_isNeg)
+      spiSendAtIndex(seven_seg[NB_CHAR-1], i); // Carret is the last one
   }
   
   return 0;
@@ -56,14 +55,21 @@ int SevenSeg::spiSendAtIndex(unsigned int val, int index){
   
   digitalWrite(SS, LOW);
      
-  SPI.transfer((0x1 << (m_size - 1 - index)) & 0xFF);
+  SPI.transfer((0x1 << (DISP_SIZE - 1 - index)) & 0xFF);
   SPI.transfer(val & 0xFF);
       
   digitalWrite(SS, HIGH);
       
 }
 
-int SevenSeg::setValue(long value) { 
+int SevenSeg::setValue(long value) {
+  
+  m_isChar = 0;
+  
+  if (value < 0)
+    m_isNeg = 1;
+  else
+    m_isNeg = 0;
 
   m_value.binVal = value;
   return value;
@@ -72,7 +78,11 @@ int SevenSeg::setValue(long value) {
 
 int SevenSeg::setValue(char value) {
 
-  int v = charToVal(value);
+  int v;
+  
+  m_isChar = 1;
+  
+  v = charToVal(value);
   m_value.binVal = v >= 0 ? v : 0;
   return m_value.binVal;
 
@@ -82,19 +92,47 @@ int SevenSeg::setValue(char str[]) {
  
   int i = 0, j = 0;
   int v = 0;
-  char c = str[0];
+  char c;
+  char dot = 0xFF; // needed to mask the dot value
+  
+  m_isChar = 1;  
   m_value.binVal = 0;
-  while (c != '\0' && i < m_size) {
+  
+  if (str == NULL)
+    return;
+  
+  c =str[0];  
+  // Look for the end of the string (max 2 DISP_SIZE if there is some dots)
+  while (c != '\0' && i < 2 * DISP_SIZE) {
     c = str[++i];
   }
-  for (i--,j = 0; i >= 0; i--,j++) {
+  // Write char from last to first because last on will be sent first
+  j = 0;
+  for (i--; i >= 0 && j < DISP_SIZE; i--) {
     c = str[i];
-    v = charToVal(c);
-    v = v >= 0 ? v : 0;
-    m_value.tab[j] = v;
+    if (c != '.') {
+      v = charToVal(c);
+      v = v >= 0 ? v : 0;
+      m_value.tab[j] = v & dot;
+      dot = 0xFF;
+      j++;
+    } else {
+      dot = 0x7F; // 0x7F is the dot value in seven_seg
+    }
   }
   
   return m_value.binVal;
+  
+}
+
+int SevenSeg::setValue(float value, int nbDec) {
+  
+  m_isChar = 0;
+  
+  if (value < 0.0)
+    m_isNeg = 1;
+  
+  //TODO
   
 }
 
@@ -102,10 +140,17 @@ int SevenSeg::charToVal(char c) {
  
   int i;
   for (i = 0; i < NB_CHAR; i++) {
-    if (tab_char[i] == c) 
+    if (tab_char[i] == c)
       return seven_seg[i];
   }
   return -1;
+  
+}
+
+byte SevenSeg::setDots(byte dots) {
+  
+  m_dot = dots;
+  return m_dot;
   
 }
 

@@ -13,8 +13,8 @@
 
 #include "Arduino.h"
 
-
-#define NB_CHAR 16
+#define DISP_SIZE 8
+#define NB_CHAR 28
 //  7-seg display
 //   0---
 // 5 |   | 1
@@ -38,30 +38,46 @@ const unsigned int seven_seg[NB_CHAR] = {
   0xC6, // C
   0xA1, // d
   0x86, // E
-  0x8E // F
+  0x8E, // F
+  0x82, // G (== 6)
+  0x89, // H
+  0xF9, // I (== 1)
+  0xE1, // J
+  0xC7, // L
+  0xC0, // O (== 0)
+  0x8C, // P
+  0x92, // S (== 5)
+  0xC1, // U
+  0x7F, // .
+  0xFF, // space
+  0xBF, // - (CARRET MUST BE THE LAST ONE IN THIS TAB)
 };
 
-const char tab_char[NB_CHAR+1] = "0123456789ABCDEF";
+const char tab_char[NB_CHAR+1] = "0123456789ABCDEFGHIJLOPSU. -";
 
 union spiValue {
-  unsigned char tab[8];
+  unsigned char tab[DISP_SIZE];
   unsigned long long binVal;
 };
 
 class SevenSeg {
  
   public:
-    SevenSeg(int dispSize = 8);
-    int printValueSync(int isChar = 0);
+    SevenSeg();
+    int printValueSync();
     int setValue(long value);
     int setValue(char value);
+    int setValue(float value);
     int setValue(char str[]);
     
+    byte setDots(byte dots);
+    
   private:
-    int m_size;
     spiValue m_value;
-//    unsigned long value_to_print = 0;
-    int dot_dec = 1;
+    byte m_dot = 0;
+    
+    int m_isChar = 0;
+    int m_isNeg = 0;
     
     int charToVal(char c);
     int spiSendAtIndex(unsigned int val, int index);
