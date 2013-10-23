@@ -8,7 +8,7 @@
  *  - Add (long) assignments and casts to TimerOne::read() to ensure calculations involving tmp, ICR1 and TCNT1 aren't truncated
  *  - Ensure 16 bit registers accesses are atomic - run with interrupts disabled when accessing
  *  - Remove global enable of interrupts (sei())- could be running within an interrupt routine)
- *  - Disable interrupts whilst TCTN1 == 0.  Datasheet vague on this, but experiment shows that overflow interrupt 
+ *  - Disable interrupts whilst TCTN1 == 0.  Datasheet vague on this, but experiment shows that overflow interrupt
  *    flag gets set whilst TCNT1 == 0, resulting in a phantom interrupt.  Could just set to 1, but gets inaccurate
  *    at very short durations
  *  - startBottom() added to start counter at 0 and handle all interrupt enabling.
@@ -43,27 +43,27 @@
 
 class TimerOne
 {
-  public:
-  
-    // properties
-    unsigned int pwmPeriod;
-    unsigned char clockSelectBits;
+public:
+	
+	// properties
+	unsigned int pwmPeriod;
+	unsigned char clockSelectBits;
 	char oldSREG;					// To hold Status Register while ints disabled
 
-    // methods
-    void initialize(long microseconds=1000000);
-    void start();
-    void stop();
-    void restart();
+	// methods
+	void initialize(long microseconds=1000000);
+	void start();
+	void stop();
+	void restart();
 	void resume();
 	unsigned long read();
-    void pwm(char pin, int duty, long microseconds=-1);
-    void disablePwm(char pin);
-    void attachInterrupt(void (*isr)(), long microseconds=-1);
-    void detachInterrupt();
-    void setPeriod(long microseconds);
-    void setPwmDuty(char pin, int duty);
-    void (*isrCallback)();
+	void pwm(char pin, int duty, long microseconds=-1);
+	void disablePwm(char pin);
+	void attachInterrupt(void (*isr)(), long microseconds=-1);
+	void detachInterrupt();
+	void setPeriod(long microseconds);
+	void setPwmDuty(char pin, int duty);
+	void (*isrCallback)();
 };
 
 extern TimerOne Timer1;
