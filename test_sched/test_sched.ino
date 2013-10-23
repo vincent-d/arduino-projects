@@ -14,10 +14,10 @@ void updateTemp();
 
 void setup() {
 
-  Scheduler.initialize(8000, 1500);
-  Scheduler.registerFunctionInSlot(updateTemp, 0);
-  Scheduler.registerFunctionInAllSlots(extPrintValueSync);
   Disp.setValue(0l);
+  Scheduler.initialize(MS_2_US(8));
+  Scheduler.registerFunction(updateTemp, S_2_US(2), 1875);
+  Scheduler.registerFunction(extPrintValueSync, MS_2_US(8));
 
 }
 
