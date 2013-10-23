@@ -38,7 +38,7 @@ int SevenSeg::printValueSync() {
 			value = -value;
 		while (value > 0 && i < DISP_SIZE) {
 
-			val = seven_seg[value % 10];
+			val = tabCodes[value % 10];
 			if (m_dot & 1 << i)
 				val &= ~0x80;
 
@@ -48,7 +48,7 @@ int SevenSeg::printValueSync() {
 			i++;
 		}
 		if (m_isNeg)
-			spiSendAtIndex(seven_seg[NB_CHAR-1], i); // Carret is the last one
+			spiSendAtIndex(tabCodes[NB_CHAR-1], i); // Carret is the last one
 	}
 
 	return 0;
@@ -121,7 +121,7 @@ int SevenSeg::setValue(char str[]) {
 			dot = 0xFF;
 			j++;
 		} else {
-			dot = 0x7F; // 0x7F is the dot value in seven_seg
+			dot = 0x7F; // 0x7F is the dot value in tabCodes
 		}
 	}
 
@@ -153,8 +153,8 @@ int SevenSeg::charToVal(char c) {
 
 	int i;
 	for (i = 0; i < NB_CHAR; i++) {
-		if (tab_char[i] == c)
-			return seven_seg[i];
+		if (tabChar[i] == c)
+			return tabCodes[i];
 	}
 	return -1;
 

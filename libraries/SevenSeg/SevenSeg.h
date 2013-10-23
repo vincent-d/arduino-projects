@@ -8,8 +8,8 @@
  * Second byte sent: value to display at index
  */
 
-#ifndef SEVEN_SEG_H
-#define SEVEN_SEG_H
+#ifndef tabCodes_H
+#define tabCodes_H
 
 #include "Arduino.h"
 
@@ -22,7 +22,7 @@
 // 4 |   | 2
 //   3---  7.
 // A bit=0 means the led is on (the last one is the dot).
-const unsigned int seven_seg[NB_CHAR] = {
+const unsigned int tabCodes[NB_CHAR] = {
 	0xC0, // 0
 	0xF9, // 1
 	0xA4, // 2
@@ -53,7 +53,7 @@ const unsigned int seven_seg[NB_CHAR] = {
 	0xBF, // - (CARRET MUST BE THE LAST ONE IN THIS TAB)
 };
 
-const char tab_char[NB_CHAR+1] = "0123456789ABCDEFGHIJLOPSU. -";
+const char tabChar[NB_CHAR+1] = "0123456789ABCDEFGHIJLOPSU. -";
 
 union spiValue {
 	unsigned char tab[DISP_SIZE];
@@ -84,5 +84,5 @@ private:
 
 };
 
-#endif // SEVEN_SEG_H
+#endif // tabCodes_H
 
