@@ -17,16 +17,13 @@ SevenSeg disp;
 // ADC / measure
 static const float range_adc = 5.0;
 static const int resolution_adc = 1024;
-static const float step_adc = 0.001; // V/dC
+static const float step_adc = 0.01; // V/°C
 
 void interrupt();
 
 void setup() {
 
   Timer1.attachInterrupt(interrupt, interrupt_slot_time);
-  //disp.setValue(0l);
-  //disp.setDots(1<<1);
-  disp.setValue(-200l);
 
 }
 
@@ -36,17 +33,17 @@ void loop() {
 
 }
 
-int readTemp() {
+float readTemp() {
    
   int value_adc = analogRead(pin_adc);
-  int temperature = (int) ((( (float) value_adc * range_adc) / (float) resolution_adc) / step_adc);
+  float temperature = ((( (float) value_adc * range_adc) / (float) resolution_adc) / step_adc);
   return temperature;
   
 }
 
 void interrupt() {
   
-  int temp;
+  float temp;
  
   // All interrupts
   disp.printValueSync();
@@ -54,7 +51,7 @@ void interrupt() {
   switch (interrupt_slot) {
     case 0:
       temp = readTemp();
-      //disp.setValue((long) temp);
+      disp.setValue(temp);
       break;
     default:
       break;    
