@@ -6,6 +6,12 @@
 #include "SevenSeg.h"
 #include <SPI.h>
 
+SevenSeg Disp;
+
+void extPrintValueSync() {
+	Disp.printValueSync(); 
+}
+
 SevenSeg::SevenSeg() {
 
 	SPI.begin();
@@ -18,7 +24,7 @@ SevenSeg::SevenSeg() {
 
 }
 
-int SevenSeg::printValueSync() {
+void SevenSeg::printValueSync() {
 
 	int value;
 	unsigned int val;
@@ -51,7 +57,7 @@ int SevenSeg::printValueSync() {
 			spiSendAtIndex(tabCodes[NB_CHAR-1], i); // Carret is the last one
 	}
 
-	return 0;
+	return;
 
 }
 
@@ -105,7 +111,7 @@ int SevenSeg::setValue(char str[]) {
 	if (str == NULL)
 		return -1;
 
-	c =str[0];
+	c = str[0];
 	// Look for the end of the string (max 2 DISP_SIZE if there is some dots)
 	while (c != '\0' && i < 2 * DISP_SIZE) {
 		c = str[++i];

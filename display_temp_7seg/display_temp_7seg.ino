@@ -11,8 +11,8 @@ static int const interrupt_slot_time = 8000;
 static int const interrupt_tot_slot = 1500;
 static int interrupt_slot = 0;
 
-// SPI / display
-SevenSeg disp;
+// SPI / Display
+
 
 // ADC / measure
 static const float range_adc = 5.0;
@@ -46,12 +46,12 @@ void interrupt() {
   float temp;
  
   // All interrupts
-  disp.printValueSync();
+  Disp.printValueSync();
   
   switch (interrupt_slot) {
     case 0:
       temp = readTemp();
-      disp.setValue(temp);
+      Disp.setValue(temp);
       break;
     default:
       break;    

@@ -8,8 +8,8 @@
  * Second byte sent: value to display at index
  */
 
-#ifndef tabCodes_H
-#define tabCodes_H
+#ifndef SEVEN_SEG_H
+#define SEVEN_SEG_H
 
 #include "Arduino.h"
 
@@ -64,7 +64,7 @@ class SevenSeg {
 
 public:
 	SevenSeg();
-	int printValueSync();
+	void printValueSync();
 	int setValue(long value);
 	int setValue(char value);
 	int setValue(float value, int nbDec = 1);
@@ -84,5 +84,9 @@ private:
 
 };
 
-#endif // tabCodes_H
+extern SevenSeg Disp;
+
+void extPrintValueSync();
+
+#endif // SEVEN_SEG_H
 
