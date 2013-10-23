@@ -67,20 +67,20 @@ class SevenSeg {
     int printValueSync();
     int setValue(long value);
     int setValue(char value);
-    int setValue(float value);
+    int setValue(float value, int nbDec = 1);
     int setValue(char str[]);
     
     byte setDots(byte dots);
     
   private:
     spiValue m_value;
-    byte m_dot = 0;
+    byte m_dot;
     
-    int m_isChar = 0;
-    int m_isNeg = 0;
+    int m_isChar;
+    int m_isNeg;
     
     int charToVal(char c);
-    int spiSendAtIndex(unsigned int val, int index);
+    void spiSendAtIndex(unsigned int val, int index);
   
 };
 

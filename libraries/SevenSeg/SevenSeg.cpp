@@ -12,6 +12,10 @@ SevenSeg::SevenSeg() {
   SPI.setBitOrder(MSBFIRST);
   SPI.setDataMode(SPI_MODE0);
   
+  m_dot = 0;
+  m_isChar = 0;
+  m_isNeg = 0;
+  
 }
 
 int SevenSeg::printValueSync() {
@@ -51,7 +55,7 @@ int SevenSeg::printValueSync() {
   
 }
 
-int SevenSeg::spiSendAtIndex(unsigned int val, int index){
+void SevenSeg::spiSendAtIndex(unsigned int val, int index){
   
   digitalWrite(SS, LOW);
      
@@ -99,7 +103,7 @@ int SevenSeg::setValue(char str[]) {
   m_value.binVal = 0;
   
   if (str == NULL)
-    return;
+    return -1;
   
   c =str[0];  
   // Look for the end of the string (max 2 DISP_SIZE if there is some dots)
@@ -126,13 +130,22 @@ int SevenSeg::setValue(char str[]) {
 }
 
 int SevenSeg::setValue(float value, int nbDec) {
-  
+   
   m_isChar = 0;
   
-  if (value < 0.0)
+  if (value < 0.0) {
     m_isNeg = 1;
+    value = -value;
+  }
   
-  //TODO
+  int i;
+  for (i = 0; i < nbDec; i++) {
+    value *= 10;
+  }
+  m_value.binVal = (unsigned long) value;
+  m_dot = nbDec == 0 ? 0 : 1 << (nbDec + 1);
+  
+  return m_value.binVal;
   
 }
 
