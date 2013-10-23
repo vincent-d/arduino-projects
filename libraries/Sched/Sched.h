@@ -28,6 +28,7 @@ public:
 	void registerFunction(void (*f)(), unsigned long period, unsigned long offset = 0);
 	void isrCallback();
 	struct SchedFunction *createSchedFunction(void (*f)(), unsigned long period, unsigned long offset);
+	void deRegisterFunction(void (*f)());
 
 private:
 	void resume();

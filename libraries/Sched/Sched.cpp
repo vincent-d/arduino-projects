@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 
-
 Sched Scheduler;
 
 ISR(TIMER1_OVF_vect)          // interrupt service routine that wraps a user defined function supplied by attachInterrupt
@@ -52,6 +51,32 @@ struct SchedFunction *Sched::createSchedFunction(void (*f)(), unsigned long peri
 	return s;
 }
 
+void Sched::deRegisterFunction(void (*f)()) {
+
+	struct SchedFunction *s = m_firstFn;
+	struct SchedFunction *p = m_firstFn;
+	int i;
+
+	if (m_firstFn->fn == f) {
+		m_firstFn = m_firstFn->nextFn;
+		free(s);
+	} else {
+		s = m_firstFn->nextFn;
+		for (i = 0; i < m_nbFunctions - 1; i++) {
+			if (s->fn == f) {
+				p->nextFn = s->nextFn;
+				if (s == m_lastFn)
+					m_lastFn = p;
+				free(s);
+				break;
+			}
+			p = s;
+			s = s->nextFn;
+		}
+	}
+	m_nbFunctions--;
+
+}
 
 void Sched::isrCallback() {
 
