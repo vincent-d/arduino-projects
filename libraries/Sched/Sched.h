@@ -11,46 +11,34 @@
 
 #define RESOLUTION 65536    // Timer1 is 16 bit
 
-struct Slot;
-struct SlotFunction;
+#define MS_2_US(v) ((v) * 1000)
+#define S_2_US(v)  (MS_2_US(v * 1000))
 
-struct Slot {
-	struct SlotFunction *functions;
-	struct Slot *nextSlot;
-	int nbFunctions;
-};
-
-struct Slot *createSlotList(int nb);
-struct Slot *createEmptySlot();
-
-struct SlotFunction {
+struct SchedFunction {
 	void (*fn)();
-	struct SlotFunction *nextFn;
+	struct SchedFunction *nextFn;
+	unsigned long periodSlots;
+	unsigned long remainingSlots;
 };
-
-struct SlotFunction *createSlotFunction(void (*f)());
 
 class Sched {
 
 public:
-	void initialize(int time, int nbSlots);
-
-	void registerFunctionInSlot(void (*f)(), int slot);
-	void registerFunctionInAllSlots(void (*f)());
-
+	void initialize(unsigned long time);
+	void registerFunction(void (*f)(), unsigned long period, unsigned long offset = 0);
 	void isrCallback();
+	struct SchedFunction *createSchedFunction(void (*f)(), unsigned long period, unsigned long offset);
 
 private:
 	void resume();
 	void setPeriod(long microseconds);
 
-	unsigned char clockSelectBits;
-	char oldSREG;					// To hold Status Register while ints disabled
+	struct SchedFunction *m_firstFn;
+	struct SchedFunction *m_lastFn;
+	int m_nbFunctions;
 
-	int m_nbSlots;
-	struct Slot *m_firstSlot;
-	struct Slot *m_currentSlot;
-	void internalRegisterFnInSlot(void (*f)(), struct Slot *s);
+	unsigned long m_period;
+	unsigned long m_slot;
 
 };
 
