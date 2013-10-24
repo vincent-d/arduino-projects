@@ -11,8 +11,6 @@
 #ifndef SEVEN_SEG_H
 #define SEVEN_SEG_H
 
-#include "Arduino.h"
-
 #define DISP_SIZE 8
 #define NB_CHAR 28
 //  7-seg display
@@ -22,7 +20,7 @@
 // 4 |   | 2
 //   3---  7.
 // A bit=0 means the led is on (the last one is the dot).
-const unsigned int tabCodes[NB_CHAR] = {
+const unsigned int tab_codes[NB_CHAR] = {
 	0xC0, // 0
 	0xF9, // 1
 	0xA4, // 2
@@ -53,40 +51,31 @@ const unsigned int tabCodes[NB_CHAR] = {
 	0xBF, // - (CARRET MUST BE THE LAST ONE IN THIS TAB)
 };
 
-const char tabChar[NB_CHAR+1] = "0123456789ABCDEFGHIJLOPSU. -";
+const char tab_char[NB_CHAR+1] = "0123456789ABCDEFGHIJLOPSU. -";
 
-union spiValue {
+union spi_value {
 	unsigned char tab[DISP_SIZE];
 	unsigned long long binVal;
 };
 
-class SevenSeg {
-
-public:
-	SevenSeg();
-	void printValueSync();
-	int setValue(long value);
-	int setValue(char value);
-	int setValue(float value, int nbDec = 1);
-	int setValue(char str[]);
-
-	byte setDots(byte dots);
-
-private:
-	spiValue m_value;
-	byte m_dot;
-
-	int m_isChar;
-	int m_isNeg;
-
-	int charToVal(char c);
-	void spiSendAtIndex(unsigned int val, int index);
-
+struct seven_seg {
+	union spi_value value;
+	byte dot;
+	int is_char;
+	int is_neg;
 };
 
-extern SevenSeg Disp;
 
-void extPrintValueSync();
+void ss_initialize(struct seven_seg *ss);
+void ss_printValueSync(struct seven_seg *ss);
+int ss_setValueLong(struct seven_seg *ss, long value);
+int ss_setValueChar(struct seven_seg *ss, char value);
+int ss_setValueFloat(struct seven_seg *ss, float value, int nb_dec);
+int ss_setValueStr(struct seven_seg *ss, char str[]);
+
+byte ss_setDots(struct seven_seg *ss, byte dots);
+
+extern struct seven_seg Disp;
 
 #endif // SEVEN_SEG_H
 
