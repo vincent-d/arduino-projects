@@ -1,5 +1,5 @@
 
-#include <SPI.h>
+#include "SPIc.h"
 #include "TimerOne.h"
 #include "SevenSeg.h"
 
@@ -28,39 +28,39 @@ void setup() {
 }
 
 void loop() {
- 
+
   delay(1000);
 
 }
 
 float readTemp() {
-   
+
   int value_adc = analogRead(pin_adc);
   float temperature = ((( (float) value_adc * range_adc) / (float) resolution_adc) / step_adc);
   return temperature;
-  
+
 }
 
 void interrupt() {
-  
+
   float temp;
- 
+
   // All interrupts
-  Disp.printValueSync();
-  
+  ss_printValueSync(&Disp);
+
   switch (interrupt_slot) {
     case 0:
       temp = readTemp();
-      Disp.setValue(temp);
+      ss_setValueFloat(&Disp, temp, 1);
       break;
     default:
-      break;    
+      break;
   }
-  
+
   interrupt_slot = (interrupt_slot + 1) % interrupt_tot_slot;
-  
+
   return;
-  
+
 }
 
 
