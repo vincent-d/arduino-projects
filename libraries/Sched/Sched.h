@@ -14,35 +14,39 @@
 #define MS_2_US(v) ((v) * 1000)
 #define S_2_US(v)  (MS_2_US(v * 1000))
 
-struct SchedFunction {
-	void (*fn)();
-	struct SchedFunction *nextFn;
-	unsigned long periodSlots;
-	unsigned long remainingSlots;
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct SchedTask {
+    void (*fn)();
+    struct SchedTask *next_fn;
+    unsigned long period_tick;
+    unsigned long remaining_ticks;
 };
 
-class Sched {
-
-public:
-	void initialize(unsigned long time);
-	void registerFunction(void (*f)(), unsigned long period, unsigned long offset = 0);
-	void isrCallback();
-	struct SchedFunction *createSchedFunction(void (*f)(), unsigned long period, unsigned long offset);
-	void deRegisterFunction(void (*f)());
-
-private:
-	void resume();
-	void setPeriod(long microseconds);
-
-	struct SchedFunction *m_firstFn;
-	struct SchedFunction *m_lastFn;
-	int m_nbFunctions;
-
-	unsigned long m_period;
-	unsigned long m_slot;
-
+struct Sched {
+    struct SchedTask *first_fn;
+    struct SchedTask *last_fn;
+    int nb_fn;
+    unsigned long period;
 };
 
-extern Sched Scheduler;
+void initialize(struct Sched *sched, unsigned long time);
+void registerFunction(struct Sched *sched, void (*f)(), unsigned long period);
+void registerFunctionWithOffset(struct Sched *sched, void (*f)(), unsigned long period, unsigned long offset);
+void isrCallback();
+struct SchedTask *createSchedFunction(struct Sched *sched, void (*f)(), unsigned long period, unsigned long offset);
+void deRegisterFunction(struct Sched *sched, void (*f)());
+void setPeriod(long microseconds);
+
+// This is the infinite loop. will never return.
+void launchScheduler();
+
+extern struct Sched Scheduler;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // SCHED_H
