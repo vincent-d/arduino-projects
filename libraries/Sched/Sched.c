@@ -9,6 +9,11 @@
 #include <avr/sleep.h>
 
 
+static void appendTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
+static void insertTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
+static void isrCallback();
+static void setPeriod(uint32_t microseconds);
+
 static volatile uint8_t ticks = 0;
 
 ISR(TIMER1_OVF_vect)          // interrupt service routine that wraps a user defined function supplied by attachInterrupt
@@ -81,12 +86,10 @@ static void appendTask(struct Sched *sched, struct SchedTask *task, struct Sched
 struct SchedTask *createSchedFunction(void (*f)(), uint32_t period_tick, uint16_t priority, uint32_t offset) {
 
 	struct SchedTask *s;
-	int p;
 	s = (struct SchedTask*) malloc(sizeof(struct SchedTask));
 	s->fn = f;
 	s->next_fn = NULL;
-	p = period_tick;
-	s->period_tick = p > 0 ? p : 1;
+	s->period_tick = period_tick > 0 ? period_tick : 1;
 	s->remaining_ticks = offset + 1; //delay all tasks to avoid underflow on the first call
 	s->priority = priority;
 
@@ -129,6 +132,8 @@ void launchScheduler(struct Sched *sched) {
 
 	int i;
 	struct SchedTask *f;
+
+	ticks = 0;
 
 	while (1) {
 		set_sleep_mode(SLEEP_MODE_IDLE);

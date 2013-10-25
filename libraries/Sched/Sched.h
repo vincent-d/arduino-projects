@@ -87,11 +87,6 @@ void deRegisterFunction(struct Sched *sched, void (*f)());
  */
 void launchScheduler(struct Sched *sched);
 
-static void appendTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
-static void insertTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
-static void isrCallback();
-static void setPeriod(uint32_t microseconds);
-
 #ifdef __cplusplus
 }
 #endif
