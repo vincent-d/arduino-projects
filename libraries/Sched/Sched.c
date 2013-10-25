@@ -9,14 +9,23 @@
 #include <avr/sleep.h>
 
 
+/**
+ * Append @p task after @p ref in @p sched list
+ */
 static void appendTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
+/**
+ * Insert @p task before @p ref in @p sched list
+ */
 static void insertTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
 static void isrCallback();
+/**
+ * Set the Timer1 period
+ */
 static void setPeriod(uint32_t microseconds);
 
 static volatile uint8_t ticks = 0;
 
-ISR(TIMER1_OVF_vect)          // interrupt service routine that wraps a user defined function supplied by attachInterrupt
+ISR(TIMER1_OVF_vect)
 {
 	isrCallback();
 }
@@ -157,6 +166,9 @@ void launchScheduler(struct Sched *sched) {
 	}
 }
 
+/*
+ * Function from TimerOne Arduino library
+ */
 static void setPeriod(uint32_t microseconds)		// AR modified for atomic access
 {
 	uint8_t clockSelectBits;
