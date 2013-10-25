@@ -15,7 +15,7 @@
 #define _SPI_C_H_INCLUDED
 
 //#include <stdio.h>
-#include <Arduino.h>
+#include "Arduino.h"
 #include <avr/pgmspace.h>
 
 #define SPI_CLOCK_DIV4 0x00
@@ -37,12 +37,12 @@
 #define SPI_2XCLOCK_MASK 0x01  // SPI2X = bit 0 on SPSR
 
 
-/*inline*/ byte spi_transfer(byte _data);
+inline byte spi_transfer(byte _data);
 
 // SPI Configuration methods
 
-/*inline*/ void spi_attachInterrupt();
-/*inline*/ void spi_detachInterrupt(); // Default
+inline void spi_attachInterrupt();
+inline void spi_detachInterrupt(); // Default
 
 void spi_begin(); // Default
 void spi_end();
