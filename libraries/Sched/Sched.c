@@ -9,7 +9,7 @@
 #include <avr/sleep.h>
 
 
-static volatile int ticks = 0;
+static volatile uint8_t ticks = 0;
 
 ISR(TIMER1_OVF_vect)          // interrupt service routine that wraps a user defined function supplied by attachInterrupt
 {
