@@ -8,6 +8,7 @@ AVR_TOOLS_DIR = /usr
 
 # NO_CORE = Yes
 # VARIANT = standard
+ARDUINO_CORE_PATH = /home/vincent/Devel/arduino-projects/arduino_core
 
 BOARD_TAG = uno
 # MCU = atmega328p
@@ -15,7 +16,7 @@ BOARD_TAG = uno
 
 # ISP_PROG   = stk500v1
 # AVRDUDE_ISP_BAUDRATE = 19200
-# ISP_PORT = /dev/ttyACM*
+ISP_PORT = /dev/ttyACM*
 
 include $(ARDMK_DIR)/arduino-mk/Arduino.mk
 
