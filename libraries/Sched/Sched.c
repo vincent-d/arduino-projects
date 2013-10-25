@@ -4,55 +4,88 @@
 
 #include "Sched.h"
 #include <stdlib.h>
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <avr/sleep.h>
 
 
-struct Sched Scheduler;
-
-static volatile int ticks;
+static volatile int ticks = 0;
 
 ISR(TIMER1_OVF_vect)          // interrupt service routine that wraps a user defined function supplied by attachInterrupt
 {
 	isrCallback();
 }
 
-void initialize(struct Sched *sched, unsigned long time){
+void initialize(struct Sched* sched, uint32_t time){
 
 	sched->period = time;
 	sched->nb_fn = 0;
 	sched->first_fn = NULL;
 	sched->last_fn = NULL;
 
-	ticks = 0;
-
 	setPeriod(time);
 }
 
-void registerFunction(struct Sched *sched, void (*f)(), unsigned long period) {
-	registerFunctionWithOffset(sched, f, period, 0);
+void registerFunction(struct Sched *sched, void (*f)(), uint32_t period, uint16_t priority) {
+	registerFunctionWithOffset(sched, f, period, priority, 0);
 }
 
-void registerFunctionWithOffset(struct Sched *sched, void (*f)(), unsigned long period, unsigned long offset){
+void registerFunctionWithOffset(struct Sched *sched, void (*f)(), uint32_t period, uint16_t priority, uint32_t offset){
+
+	struct SchedTask *task;
+	struct SchedTask *prev_task = sched->first_fn;
+
+	task = createSchedFunction(f, period, priority, offset);
 
 	if (sched->first_fn != NULL) {
-		sched->last_fn->next_fn = createSchedFunction(sched, f, period, offset);
-		sched->last_fn = sched->last_fn->next_fn;
+		if (prev_task->priority > priority) {
+			insertTask(sched, task, sched->first_fn);
+		} else {
+			while (prev_task->priority <= priority && prev_task != sched->last_fn)
+				prev_task = prev_task->next_fn;
+			appendTask(sched, task, prev_task);
+		}
 	} else {
-		sched->first_fn = createSchedFunction(sched, f, period, offset);
+		/* First task added */
+		sched->first_fn = task;
 		sched->last_fn = sched->first_fn;
 	}
 	sched->nb_fn++;
 }
 
-struct SchedTask *createSchedFunction(struct Sched *sched, void (*f)(), unsigned long period, unsigned long offset) {
+static void insertTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref) {
+
+	struct SchedTask *t = sched->first_fn;
+	if (t == ref) {
+		sched->first_fn = task;
+	} else {
+		while (t->next_fn != ref)
+			t = t->next_fn;
+		t->next_fn = task;
+	}
+	task->next_fn = ref;
+}
+
+static void appendTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref) {
+
+	if (ref == sched->last_fn){
+		sched->last_fn = task;
+	}
+	task->next_fn = ref->next_fn;
+	ref->next_fn = task;
+}
+
+struct SchedTask *createSchedFunction(void (*f)(), uint32_t period_tick, uint16_t priority, uint32_t offset) {
 
 	struct SchedTask *s;
 	int p;
 	s = (struct SchedTask*) malloc(sizeof(struct SchedTask));
 	s->fn = f;
 	s->next_fn = NULL;
-	p = period / sched->period;
+	p = period_tick;
 	s->period_tick = p > 0 ? p : 1;
-	s->remaining_ticks = offset;
+	s->remaining_ticks = offset + 1; //delay all tasks to avoid underflow on the first call
+	s->priority = priority;
 
 	return s;
 }
@@ -89,16 +122,19 @@ void isrCallback() {
 }
 
 
-void launchScheduler() {
+void launchScheduler(struct Sched *sched) {
 
 	int i;
 	struct SchedTask *f;
-	
+
 	while (1) {
-		if (ticks) {
-			ticks--;
-			f = Scheduler.first_fn;
-			for (i = 0; i < Scheduler.nb_fn; i++) {
+		set_sleep_mode(SLEEP_MODE_IDLE);
+		sleep_mode();
+
+		cli();
+		while (ticks > 0) {
+			f = sched->first_fn;
+			for (i = 0; i < sched->nb_fn; i++) {
 				if (f->remaining_ticks == 0) {
 					f->fn();
 					f->remaining_ticks = f->period_tick - 1;
@@ -107,15 +143,17 @@ void launchScheduler() {
 				}
 				f = f->next_fn;
 			}
+			ticks--;
 		}
+		sei();
 	}
 }
 
-void setPeriod(long microseconds)		// AR modified for atomic access
+void setPeriod(uint32_t microseconds)		// AR modified for atomic access
 {
-	unsigned char clockSelectBits;
-	char oldSREG;					// To hold Status Register while ints disabled
-	long cycles = (F_CPU / 2000000) * microseconds;                                // the counter runs backwards after TOP, interrupt is at BOTTOM so divide microseconds by 2
+	uint8_t clockSelectBits;
+	uint8_t oldSREG;					// To hold Status Register while ints disabled
+	uint32_t cycles = (F_CPU / 2000000) * microseconds;                                // the counter runs backwards after TOP, interrupt is at BOTTOM so divide microseconds by 2
 	if(cycles < RESOLUTION)              clockSelectBits = _BV(CS10);              // no prescale, full xtal
 	else if((cycles >>= 3) < RESOLUTION) clockSelectBits = _BV(CS11);              // prescale by /8
 	else if((cycles >>= 3) < RESOLUTION) clockSelectBits = _BV(CS11) | _BV(CS10);  // prescale by /64

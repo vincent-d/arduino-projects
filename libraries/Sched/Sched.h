@@ -6,8 +6,7 @@
 #define SCHED_H
 
 //#include "Arduino.h"
-#include <avr/io.h>
-#include <avr/interrupt.h>
+#include <stdint.h>
 
 #define RESOLUTION 65536    // Timer1 is 16 bit
 
@@ -21,29 +20,31 @@ extern "C" {
 struct SchedTask {
     void (*fn)();
     struct SchedTask *next_fn;
-    unsigned long period_tick;
-    unsigned long remaining_ticks;
+    uint32_t period_tick;
+    uint32_t remaining_ticks;
+	uint16_t priority;
 };
 
 struct Sched {
     struct SchedTask *first_fn;
     struct SchedTask *last_fn;
-    int nb_fn;
-    unsigned long period;
+    uint16_t nb_fn;
+    uint32_t period;
 };
 
-void initialize(struct Sched *sched, unsigned long time);
-void registerFunction(struct Sched *sched, void (*f)(), unsigned long period);
-void registerFunctionWithOffset(struct Sched *sched, void (*f)(), unsigned long period, unsigned long offset);
+void initialize(struct Sched *sched, uint32_t time);
+void registerFunction(struct Sched *sched, void (*f)(), uint32_t period, uint16_t priority);
+void registerFunctionWithOffset(struct Sched *sched, void (*f)(), uint32_t period, uint16_t priority, uint32_t offset);
 void isrCallback();
-struct SchedTask *createSchedFunction(struct Sched *sched, void (*f)(), unsigned long period, unsigned long offset);
+struct SchedTask *createSchedFunction(void (*f)(), uint32_t period_tick, uint16_t priority, uint32_t offset);
 void deRegisterFunction(struct Sched *sched, void (*f)());
-void setPeriod(long microseconds);
+void setPeriod(uint32_t microseconds);
 
 // This is the infinite loop. will never return.
-void launchScheduler();
+void launchScheduler(struct Sched *sched);
 
-extern struct Sched Scheduler;
+static void appendTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
+static void insertTask(struct Sched *sched, struct SchedTask *task, struct SchedTask *ref);
 
 #ifdef __cplusplus
 }
