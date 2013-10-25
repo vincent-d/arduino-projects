@@ -12,7 +12,7 @@ ARDUINO_CORE_PATH = /home/vincent/Devel/arduino-projects/arduino_core
 
 BOARD_TAG = uno
 # MCU = atmega328p
-# F_CPU = 16000000L
+F_CPU = 16000000L
 
 # ISP_PROG   = stk500v1
 # AVRDUDE_ISP_BAUDRATE = 19200

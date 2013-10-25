@@ -11,6 +11,8 @@ float range_adc = 5.0;
 int resolution_adc = 1024;
 float step_adc = 0.01; // V/°C
 
+long val = 1;
+
 struct Sched scheduler;
 
 //int registered = 0;
@@ -29,11 +31,11 @@ int main() {
 	init();
 
 	ss_initialize(&Disp);
-	ss_setValueLong(&Disp, 222l);
+	ss_setValueLong(&Disp, val);
 
-	initialize(&scheduler, MS_2_US(8));
-	registerFunction(&scheduler, updateTemp, 2000/8, 1);
+	initialize(&scheduler, 8000);
 	registerFunction(&scheduler, printSync, 1, 0);
+	registerFunction(&scheduler, updateTemp, 25000, 1);
 
 	launchScheduler(&scheduler);
 	/*
@@ -62,5 +64,6 @@ void updateTemp() {
 
 
 void nothing() {
+	ss_setValueLong(&Disp, val++);
 	return;
 }
