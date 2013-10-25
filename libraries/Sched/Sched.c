@@ -18,6 +18,9 @@ ISR(TIMER1_OVF_vect)          // interrupt service routine that wraps a user def
 
 void initialize(struct Sched* sched, uint32_t time){
 
+	if (sched == NULL)
+		return;
+
 	sched->period = time;
 	sched->nb_fn = 0;
 	sched->first_fn = NULL;
@@ -116,7 +119,7 @@ void deRegisterFunction(struct Sched *sched, void (*f)()) {
 	sched->nb_fn--;
 }
 
-void isrCallback() {
+static void isrCallback() {
 
 	ticks++;
 }
@@ -149,7 +152,7 @@ void launchScheduler(struct Sched *sched) {
 	}
 }
 
-void setPeriod(uint32_t microseconds)		// AR modified for atomic access
+static void setPeriod(uint32_t microseconds)		// AR modified for atomic access
 {
 	uint8_t clockSelectBits;
 	uint8_t oldSREG;					// To hold Status Register while ints disabled
